@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crosley Voyager CR8017A-BK Dissection Report | Engineering Documentation</title>
+  <meta name="description" content="Comprehensive technical dissection and analysis of the Crosley Voyager CR8017A-BK portable turntable">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --background: hsl(0, 0%, 100%);
+      --foreground: hsl(0, 0%, 9%);
+      --card: hsl(0, 0%, 98%);
+      --border: hsl(0, 0%, 90%);
+      --muted: hsl(0, 0%, 93%);
+      --muted-foreground: hsl(0, 0%, 40%);
+      --primary: hsl(210, 85%, 45%);
+      --primary-foreground: hsl(0, 0%, 98%);
+      --accent: hsl(210, 40%, 96.1%);
+      --chart-1: hsl(12, 76%, 61%);
+    }
+    
+    body { font-family: 'Roboto', sans-serif; line-height: 1.6; color: var(--foreground); background: var(--background); }
+    h1, h2, h3, h4 { font-family: 'Roboto Slab', serif; line-height: 1.2; }
+    
+    .min-h-screen { min-height: 100vh; }
+    .hidden { display: none !important; }
+    .font-serif { font-family: 'Roboto Slab', serif; }
+    .font-mono { font-family: 'Roboto Mono', monospace; }
+    
+    /* Sidebar */
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 20rem; background: var(--card); border-right: 1px solid var(--border); overflow-y: auto; padding: 2rem; z-index: 40; display: none; }
+    @media (min-width: 1024px) { .sidebar { display: block; } }
+    
+    .sidebar h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .sidebar .subtitle { font-size: 0.875rem; color: var(--muted-foreground); }
+    .separator { height: 1px; background: var(--border); margin: 1.5rem 0; }
+    .toc-title { font-size: 0.75rem; font-weight: 600; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .sidebar nav { list-style: none; }
+    .sidebar nav button { width: 100%; text-align: left; padding: 0.5rem 0.75rem; border: none; background: none; border-radius: 0.375rem; font-size: 0.875rem; color: var(--foreground); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+    .sidebar nav button:hover { background: rgba(0,0,0,0.05); }
+    .sidebar nav button.active { background: hsla(210, 85%, 45%, 0.1); color: var(--primary); font-weight: 500; }
+    .sidebar nav .nav-number { font-size: 0.75rem; color: var(--muted-foreground); }
+    .sidebar nav button.active .nav-number { color: var(--primary); }
+    .sidebar-footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted-foreground); }
+    .sidebar-footer p { margin-bottom: 0.5rem; }
+    .sidebar-footer .font-medium { font-weight: 500; }
+    
+    /* Mobile */
+    .mobile-header { display: flex; position: fixed; top: 0; left: 0; right: 0; background: var(--card); border-bottom: 1px solid var(--border); padding: 1rem; justify-content: space-between; align-items: center; z-index: 50; }
+    @media (min-width: 1024px) { .mobile-header { display: none; } }
+    .mobile-header h2 { font-size: 1.125rem; font-weight: 600; }
+    .menu-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; }
+    .mobile-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 30; }
+    .mobile-nav { position: fixed; left: 0; top: 4rem; bottom: 0; width: 20rem; background: var(--card); border-right: 1px solid var(--border); padding: 1.5rem; overflow-y: auto; z-index: 40; }
+    
+    /* Main */
+    .main { padding-top: 4rem; }
+    @media (min-width: 1024px) { .main { margin-left: 20rem; padding-top: 0; } }
+    
+    /* Hero */
+    .hero { position: relative; height: 500px; background: linear-gradient(to bottom, rgba(23, 23, 23, 0.9), rgba(23, 23, 23, 1)); overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 0 1.5rem; }
+    .hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; }
+    .hero-content { position: relative; max-width: 64rem; text-align: center; color: var(--primary-foreground); }
+    .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .hero .subtitle { font-size: 1.5rem; opacity: 0.9; margin-bottom: 2rem; }
+    .hero .description { font-size: 1rem; opacity: 0.8; max-width: 42rem; margin: 0 auto; }
+    @media (min-width: 768px) { .hero h1 { font-size: 4rem; } }
+    @media (min-width: 1024px) { .hero h1 { font-size: 4.5rem; } }
+    
+    /* Container */
+    .container { max-width: 80rem; margin: 0 auto; padding: 3rem 1.5rem; }
+    @media (min-width: 1024px) { .container { padding: 6rem 1.5rem; } }
+    
+    /* Sections */
+    .section { margin-bottom: 6rem; scroll-margin-top: 5rem; }
+    .section-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.5rem; }
+    .section-number { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+    .section-title { font-size: 2.5rem; font-weight: 600; }
+    @media (min-width: 768px) { .section-title { font-size: 3rem; } }
+    .subsection { margin-bottom: 3rem; }
+    .subsection-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; }
+    
+    /* Text */
+    p { line-height: 1.75; margin-bottom: 1.5rem; }
+    .leading-relaxed { line-height: 1.75; }
+    
+    /* Card */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; }
+    .grid { display: grid; gap: 1.5rem; }
+    @media (min-width: 768px) { .grid.cols-2 { grid-template-columns: repeat(2, 1fr); } .grid.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+    .card h4 { font-weight: 600; margin-bottom: 0.75rem; }
+    .card ul { list-style: none; color: var(--muted-foreground); }
+    .card ul li { margin-bottom: 0.5rem; }
+    .spec-label { font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.5rem; }
+    .spec-value { font-size: 1.125rem; font-weight: 600; }
+    
+    /* Badge */
+    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: var(--muted); border-radius: 0.25rem; font-size: 0.875rem; margin: 0.25rem; }
+    .badge-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0; }
+    
+    /* Images */
+    .image-grid { display: grid; gap: 1.5rem; margin: 2rem 0; }
+    @media (min-width: 768px) { .image-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .image-grid { grid-template-columns: repeat(3, 1fr); } }
+    .image-item { overflow: hidden; border-radius: 0.375rem; cursor: pointer; transition: transform 0.2s; }
+    .image-item:hover { transform: scale(1.02); }
+    .image-aspect { aspect-ratio: 4/3; background: var(--muted); overflow: hidden; }
+    .image-aspect img { width: 100%; height: 100%; object-fit: cover; }
+    .image-full { margin: 2rem 0; }
+    .image-full img { width: 100%; border-radius: 0.5rem; cursor: pointer; }
+    .image-caption { margin-top: 1rem; font-size: 0.875rem; color: var(--muted-foreground); line-height: 1.75; }
+    
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead { background: rgba(0,0,0,0.03); }
+    th { padding: 0.75rem; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+    td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    tr:hover { background: rgba(0,0,0,0.02); }
+    .overflow-x-auto { overflow-x: auto; }
+    
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 2rem; }
+    .lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255, 255, 255, 0.1); color: white; border: none; width: 3rem; height: 3rem; border-radius: 50%; font-size: 2rem; cursor: pointer; }
+    .lightbox-close:hover { background: rgba(255, 255, 255, 0.2); }
+    
+    /* Special cards */
+    .card-accent { background: rgba(210, 85%, 45%, 0.05); border-left: 4px solid var(--primary); padding: 2rem; }
+    .card-accent-2 { background: rgba(210, 40%, 96%, 0.3); border-left: 4px solid var(--chart-1); padding: 2rem; }
+    .card-muted-header { background: rgba(0,0,0,0.03); padding: 1rem 1.5rem; }
+    .card-overflow { border-radius: 0.5rem; overflow: hidden; }
+    
+    /* Footer */
+    .footer { border-top: 1px solid var(--border); padding-top: 3rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--muted-foreground); }
+    .footer p { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <h2 class="font-serif">Crosley Voyager</h2>
+      <p class="subtitle">CR8017A-BK Dissection Report</p>
+    </div>
+    <div class="separator"></div>
+    <h3 class="font-serif toc-title">Table of Contents</h3>
+    <nav>
+      <button data-scroll="introduction" class="active">
+        <span class="font-mono nav-number">1</span><span>Introduction</span>
+      </button>
+      <button data-scroll="product-info">
+        <span class="font-mono nav-number">2</span><span>Product Identification</span>
+      </button>
+      <button data-scroll="dissection">
+        <span class="font-mono nav-number">3</span><span>Dissection Photo Journal</span>
+      </button>
+      <button data-scroll="operation">
+        <span class="font-mono nav-number">4</span><span>Product Operation</span>
+      </button>
+      <button data-scroll="analysis">
+        <span class="font-mono nav-number">5</span><span>Product Analysis</span>
+      </button>
+      <button data-scroll="reassembly">
+        <span class="font-mono nav-number">6</span><span>Product Reassembly</span>
+      </button>
+      <button data-scroll="lessons">
+        <span class="font-mono nav-number">7</span><span>Lessons Learned</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <p class="font-medium">Author</p>
+      <p>Connor Bailey</p>
+      <p class="font-medium" style="margin-top: 1rem;">Focus Areas</p>
+      <p>Signal Processing & Embedded Systems</p>
+    </div>
+  </aside>
+
+  <!-- Mobile Header -->
+  <div class="mobile-header">
+    <h2 class="font-serif">Crosley Voyager Dissection</h2>
+    <button class="menu-btn" id="mobile-menu-btn">☰</button>
+  </div>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-overlay hidden" id="mobile-overlay"></div>
+  <div class="mobile-nav hidden" id="mobile-nav">
+    <h3 class="font-serif toc-title">Table of Contents</h3>
+    <nav>
+      <button data-scroll="introduction">1. Introduction</button>
+      <button data-scroll="product-info">2. Product Identification</button>
+      <button data-scroll="dissection">3. Dissection Photo Journal</button>
+      <button data-scroll="operation">4. Product Operation</button>
+      <button data-scroll="analysis">5. Product Analysis</button>
+      <button data-scroll="reassembly">6. Product Reassembly</button>
+      <button data-scroll="lessons">7. Lessons Learned</button>
+    </nav>
+  </div>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Hero -->
+    <section class="hero">
+      <img src="img/hero.webp" alt="Crosley Voyager Turntable" class="hero-bg">
+      <div class="hero-content">
+        <h1 class="font-serif">Crosley Voyager CR8017A-BK</h1>
+        <p class="font-serif subtitle">Dissection Report & Technical Analysis</p>
+        <p class="description">A comprehensive engineering analysis of a modern portable turntable combining mechanical, analog, and digital subsystems in one compact consumer embedded system.</p>
+      </div>
+    </section>
+
+    <div class="container">
+      <!-- Section 1: Introduction -->
+      <section id="introduction" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">1</span>
+          <h2 class="font-serif section-title">Introduction</h2>
+        </div>
+        <p class="leading-relaxed" style="font-size: 1.125rem;">
+          I am a senior computer engineering student interested in signal processing and embedded systems. For this project, I chose a Crosley briefcase-style record player (Cruiser-type portable turntable) because it combines mechanical, analog, and digital subsystems in one small product. The device includes a belt-driven motor, a ceramic phono cartridge, integrated audio amplification, and (in my model) Bluetooth connectivity, making it a compact example of a modern consumer embedded system.
+        </p>
+      </section>
+
+      <!-- Section 2: Product Identification & History -->
+      <section id="product-info" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">2</span>
+          <h2 class="font-serif section-title">Product Identification & History</h2>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">2.1 Product Identification and History</h3>
+          <p class="leading-relaxed">
+            The dissected device is a Crosley Voyager portable turntable, model CR8017A-BK, finished in black. It is a three-speed (33⅓, 45, and 78 RPM) belt-drive record player with built-in stereo speakers, Bluetooth audio input, adjustable pitch control, RCA line-out, AUX-in, and a headphone jack. Crosley Radio markets the Voyager line as an entry-level, suitcase-style record player that blends a vintage aesthetic with modern features such as Bluetooth streaming.
+          </p>
+          <p class="leading-relaxed">
+            The Voyager family (including CR8017A color variants like AM, BR, DU, FL, GY, SA, WB, etc.) appears in online catalogs starting around 2021, positioned as a step up from the smaller "Cruiser" series, with a slightly larger cabinet and front-firing speaker grille.
+          </p>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">2.2 UPC, MSRP, and Street Prices</h3>
+          <div class="card">
+            <div class="grid cols-3">
+              <div>
+                <p class="spec-label">UPC Code</p>
+                <p class="font-mono spec-value">710244223881</p>
+              </div>
+              <div>
+                <p class="spec-label">MSRP Range</p>
+                <p class="font-mono spec-value">$70 – $100 USD</p>
+              </div>
+              <div>
+                <p class="spec-label">Street Price</p>
+                <p class="font-mono spec-value">$60 – $80 USD</p>
+              </div>
+            </div>
+            <div class="separator"></div>
+            <p style="font-size: 0.875rem; color: var(--muted-foreground); margin-bottom: 0;">
+              This unit was purchased used from Goodwill for <span class="font-mono" style="font-weight: 600; color: var(--foreground);">$10</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">2.3 Retail Outlets and Availability</h3>
+          <p class="leading-relaxed">
+            The Voyager CR8017A series is widely distributed through both brick-and-mortar and online retailers:
+          </p>
+          <div class="grid cols-2">
+            <div class="card">
+              <h4>Big-Box Stores</h4>
+              <ul>
+                <li>• Target</li>
+                <li>• Walmart</li>
+                <li>• Best Buy</li>
+                <li>• Home Depot</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h4>Online Marketplaces</h4>
+              <ul>
+                <li>• Amazon</li>
+                <li>• eBay</li>
+                <li>• Reverb</li>
+                <li>• Crosley Direct</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">2.4 Rebranded / OEM Versions</h3>
+          <p class="leading-relaxed">
+            Within Crosley's catalog, the Voyager platform is implemented as a family of SKUs that share the same chassis, platter, tonearm, and core electronics, but differ mainly in cosmetic finish.
+          </p>
+          <div class="badge-container">
+            <span class="badge font-mono">CR8017A-BK</span>
+            <span class="badge font-mono">CR8017A-AM</span>
+            <span class="badge font-mono">CR8017A-BR</span>
+            <span class="badge font-mono">CR8017A-DU</span>
+            <span class="badge font-mono">CR8017A-FL</span>
+            <span class="badge font-mono">CR8017A-GY</span>
+            <span class="badge font-mono">CR8017A-SA</span>
+            <span class="badge font-mono">CR8017A-WB</span>
+            <span class="badge font-mono">CR8017A-FB</span>
+          </div>
+          <p class="leading-relaxed">
+            Outside the Crosley brand, a number of low-cost suitcase-style turntables from companies such as Victrola and 1byOne occupy the same price segment and appear to use very similar OEM designs.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 3: Dissection Photo Journal -->
+      <section id="dissection" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">3</span>
+          <h2 class="font-serif section-title">Dissection Photo Journal</h2>
+        </div>
+
+        <div class="image-grid">
+          <div class="image-item" onclick="openLightbox('img/image21.jpg')"><div class="image-aspect"><img src="img/image21.jpg" alt="Dissection photo 1"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image19.jpg')"><div class="image-aspect"><img src="img/image19.jpg" alt="Dissection photo 2"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image14.jpg')"><div class="image-aspect"><img src="img/image14.jpg" alt="Dissection photo 3"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image18.jpg')"><div class="image-aspect"><img src="img/image18.jpg" alt="Dissection photo 4"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image4.jpg')"><div class="image-aspect"><img src="img/image4.jpg" alt="Dissection photo 5"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image8.jpg')"><div class="image-aspect"><img src="img/image8.jpg" alt="Dissection photo 6"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image11.jpg')"><div class="image-aspect"><img src="img/image11.jpg" alt="Dissection photo 7"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image7.jpg')"><div class="image-aspect"><img src="img/image7.jpg" alt="Dissection photo 8"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image2.jpg')"><div class="image-aspect"><img src="img/image2.jpg" alt="Dissection photo 9"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image22.jpg')"><div class="image-aspect"><img src="img/image22.jpg" alt="Dissection photo 10"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image23.jpg')"><div class="image-aspect"><img src="img/image23.jpg" alt="Dissection photo 11"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image12.jpg')"><div class="image-aspect"><img src="img/image12.jpg" alt="Dissection photo 12"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image9.jpg')"><div class="image-aspect"><img src="img/image9.jpg" alt="Dissection photo 13"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image2.jpg')"><div class="image-aspect"><img src="img/image2.jpg" alt="Dissection photo 14"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image15.jpg')"><div class="image-aspect"><img src="img/image15.jpg" alt="Dissection photo 15"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image16.jpg')"><div class="image-aspect"><img src="img/image16.jpg" alt="Dissection photo 16"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image11.jpg')"><div class="image-aspect"><img src="img/image11.jpg" alt="Dissection photo 17"></div></div>
+          <div class="image-item" onclick="openLightbox('img/image17.jpg')"><div class="image-aspect"><img src="img/image17.jpg" alt="Dissection photo 18"></div></div>
+        </div>
+
+        <div style="margin-top: 4rem;">
+          <h3 class="font-serif subsection-title">3.1 Assorted Parts</h3>
+          <div class="image-grid">
+            <div class="image-item" onclick="openLightbox('img/image27.jpg')"><div class="image-aspect"><img src="img/image27.jpg" alt="Assorted part 1"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image28.jpg')"><div class="image-aspect"><img src="img/image28.jpg" alt="Assorted part 2"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image29.jpg')"><div class="image-aspect"><img src="img/image29.jpg" alt="Assorted part 3"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image30.jpg')"><div class="image-aspect"><img src="img/image30.jpg" alt="Assorted part 4"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image31.jpg')"><div class="image-aspect"><img src="img/image31.jpg" alt="Assorted part 5"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image32.jpg')"><div class="image-aspect"><img src="img/image32.jpg" alt="Assorted part 6"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image33.jpg')"><div class="image-aspect"><img src="img/image33.jpg" alt="Assorted part 7"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image34.jpg')"><div class="image-aspect"><img src="img/image34.jpg" alt="Assorted part 8"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image35.jpg')"><div class="image-aspect"><img src="img/image35.jpg" alt="Assorted part 9"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image36.jpg')"><div class="image-aspect"><img src="img/image36.jpg" alt="Assorted part 10"></div></div>
+            <div class="image-item" onclick="openLightbox('img/image37.jpg')"><div class="image-aspect"><img src="img/image37.jpg" alt="Assorted part 11"></div></div>
+          </div>
+        </div>
+      </section>
+      <!-- Section 4: Product Operation -->
+      <section id="operation" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">4</span>
+          <h2 class="font-serif section-title">Product Operation</h2>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">Human–Machine Interfaces</h3>
+          <div class="grid cols-2">
+            <div class="card">
+              <h4>Front-Panel Controls</h4>
+              <ul>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>Power/volume knob</span>
+                </li>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>Speed selector (33/45/78)</span>
+                </li>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>Function switch: PHONO / Bluetooth</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <h4>Connectors & Indicators</h4>
+              <ul>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>Power jack (DC in)</span>
+                </li>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>RCA line-out</span>
+                </li>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>Headphone jack</span>
+                </li>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>AUX-in jack</span>
+                </li>
+                <li style="display: flex; align-items: start; gap: 0.5rem;">
+                  <span style="color: var(--primary); margin-top: 0.25rem;">•</span>
+                  <span>Power LED & Bluetooth pairing LED</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">Timing Diagrams</h3>
+
+          <div class="card card-overflow" style="margin-bottom: 1.5rem;">
+            <div class="card-muted-header">
+              <h4 style="font-weight: 600; font-size: 0.875rem; margin: 0;">Waveform 1: Motor Voltage Step Response</h4>
+            </div>
+            <div style="padding: 1.5rem;">
+              <img src="img/image38.png" alt="Motor voltage timing diagram" onclick="openLightbox('img/image38.png')" style="width: 100%; border-radius: 0.375rem; cursor: pointer;">
+              <p class="image-caption">
+                This shows the voltage at the motor terminal when the platter motor is enabled. The voltage steps from 0 V to approximately 9 V. Because the motor is an inductive load driven from a low-impedance DC supply, the step exhibits a brief damped ringing at about 60 kHz (measured from the oscillation period ≈ 17 µs). The waveform settles to its final value in tens of microseconds, after which the motor sees a nearly constant DC voltage while it spins up mechanically.
+              </p>
+            </div>
+          </div>
+
+          <div class="card card-overflow">
+            <div class="card-muted-header">
+              <h4 style="font-weight: 600; font-size: 0.875rem; margin: 0;">Waveform 2: PHONO/BT Mode Control Transition</h4>
+            </div>
+            <div style="padding: 1.5rem;">
+              <img src="img/image3.png" alt="Mode control timing diagram" onclick="openLightbox('img/image3.png')" style="width: 100%; border-radius: 0.375rem; cursor: pointer;">
+              <p class="image-caption">
+                The PHONO/BT mode control line transitions from 0 V to ~2.6 V with a rise time of ~40 µs when the user switches to Bluetooth.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: Product Analysis -->
+      <section id="analysis" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">5</span>
+          <h2 class="font-serif section-title">Product Analysis</h2>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">5.1 & 5.2 System Architecture</h3>
+
+          <div class="card card-overflow" style="margin-bottom: 1.5rem;">
+            <div class="card-muted-header">
+              <h4 style="font-weight: 600; font-size: 0.875rem; margin: 0;">High-Level Product Design</h4>
+            </div>
+            <div style="padding: 1.5rem;">
+              <img src="img/image26.png" alt="System block diagram" onclick="openLightbox('img/image26.png')" style="width: 100%; border-radius: 0.375rem; cursor: pointer;">
+            </div>
+          </div>
+
+          <div class="card card-overflow">
+            <div class="card-muted-header">
+              <h4 style="font-weight: 600; font-size: 0.875rem; margin: 0;">Detailed Electronic Block Diagram</h4>
+            </div>
+            <div style="padding: 1.5rem;">
+              <img src="img/block-diagram.png" alt="Electronic block diagram" onclick="openLightbox('img/block-diagram.png')" style="width: 100%; border-radius: 0.375rem; cursor: pointer;">
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">5.3 Electrical Specifications</h3>
+
+          <div class="card card-overflow" style="margin-bottom: 1.5rem;">
+            <div class="card-muted-header">
+              <h4 style="font-weight: 600; font-size: 0.875rem; margin: 0;">Motor Parameters</h4>
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Parameter</th>
+                    <th style="text-align: right;">Typical</th>
+                    <th style="text-align: right;">Max Threshold</th>
+                  </tr>
+                </thead>
+                <tbody class="font-mono" style="font-size: 0.875rem;">
+                  <tr>
+                    <td style="color: var(--muted-foreground);">DC Input Voltage</td>
+                    <td style="text-align: right;">8-12 V</td>
+                    <td style="text-align: right;">14 V</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--muted-foreground);">Motor Supply Voltage</td>
+                    <td style="text-align: right;">~9 V</td>
+                    <td style="text-align: right;">13 V</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--muted-foreground);">Motor Current (33⅓ RPM)</td>
+                    <td style="text-align: right;">80 mA</td>
+                    <td style="text-align: right;">150 mA</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--muted-foreground);">System Idle Current</td>
+                    <td style="text-align: right;">70 mA</td>
+                    <td style="text-align: right;">120 mA</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card card-overflow">
+            <div class="card-muted-header">
+              <h4 style="font-weight: 600; font-size: 0.875rem; margin: 0;">Audio Parameters</h4>
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Parameter</th>
+                    <th style="text-align: right;">Typical</th>
+                    <th style="text-align: right;">Max Threshold</th>
+                  </tr>
+                </thead>
+                <tbody class="font-mono" style="font-size: 0.875rem;">
+                  <tr>
+                    <td style="color: var(--muted-foreground);">Cartridge Output (Peak)</td>
+                    <td style="text-align: right;">200 mV</td>
+                    <td style="text-align: right;">500 mV</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--muted-foreground);">Speaker Amp Output</td>
+                    <td style="text-align: right;">3 W</td>
+                    <td style="text-align: right;">6 W</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--muted-foreground);">Speaker Impedance</td>
+                    <td style="text-align: right;">4 Ω</td>
+                    <td style="text-align: right;">8 Ω</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--muted-foreground);">Headphone Jack</td>
+                    <td style="text-align: right;">0.5 V</td>
+                    <td style="text-align: right;">1 V</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">5.5 Electrical Bill of Materials</h3>
+
+          <div class="card card-overflow">
+            <div class="overflow-x-auto">
+              <table style="font-size: 0.875rem;">
+                <thead>
+                  <tr style="background: rgba(0,0,0,0.03);">
+                    <th>Manufacturer</th>
+                    <th>Part Number</th>
+                    <th>Description</th>
+                    <th>Purpose</th>
+                    <th style="text-align: right;">Qty</th>
+                    <th style="text-align: right;">Price/Unit</th>
+                    <th style="text-align: right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Crosley</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">M908ZA</td>
+                    <td>4Ω/3W OEM Speaker</td>
+                    <td style="color: var(--muted-foreground);">Audio output</td>
+                    <td class="font-mono" style="text-align: right;">2</td>
+                    <td class="font-mono" style="text-align: right;">N/A</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">N/A</td>
+                  </tr>
+                  <tr>
+                    <td>RubyCon</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">100 uF 10V</td>
+                    <td>Capacitor</td>
+                    <td style="color: var(--muted-foreground);">Power smoothing</td>
+                    <td class="font-mono" style="text-align: right;">4</td>
+                    <td class="font-mono" style="text-align: right;">$0.27</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$1.08</td>
+                  </tr>
+                  <tr>
+                    <td>Nichicon</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">470 uF 10V</td>
+                    <td>Capacitor</td>
+                    <td style="color: var(--muted-foreground);">Power storage</td>
+                    <td class="font-mono" style="text-align: right;">2</td>
+                    <td class="font-mono" style="text-align: right;">$0.48</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.96</td>
+                  </tr>
+                  <tr>
+                    <td>Nichicon</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">2200 uF 16V</td>
+                    <td>Capacitor</td>
+                    <td style="color: var(--muted-foreground);">Power reservoir</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$0.90</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.90</td>
+                  </tr>
+                  <tr>
+                    <td>Texas Instruments</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">LM4863NCK5W1C1</td>
+                    <td>Audio-amp IC</td>
+                    <td style="color: var(--muted-foreground);">Headphone amplifier</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$4.37</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$4.37</td>
+                  </tr>
+                  <tr>
+                    <td>Bel Signal</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">4R7</td>
+                    <td>Inductor</td>
+                    <td style="color: var(--muted-foreground);">Energy storage/filtering</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$1.85</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$1.85</td>
+                  </tr>
+                  <tr>
+                    <td>Nisshinbo</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">JRC4558D</td>
+                    <td>Dual Op-Amp</td>
+                    <td style="color: var(--muted-foreground);">Audio amplification</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$0.85</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.85</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">LP-99 SW BD</td>
+                    <td>Switch Board</td>
+                    <td style="color: var(--muted-foreground);">12V power routing</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">N/A</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">N/A</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">LP-99 SW2 BD</td>
+                    <td>Switch Board</td>
+                    <td style="color: var(--muted-foreground);">Control switches</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">N/A</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">N/A</td>
+                  </tr>
+                  <tr>
+                    <td>C&K</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">OS102011MS2QN1</td>
+                    <td>Switch</td>
+                    <td style="color: var(--muted-foreground);">Slide control switch</td>
+                    <td class="font-mono" style="text-align: right;">2</td>
+                    <td class="font-mono" style="text-align: right;">$0.71</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$1.42</td>
+                  </tr>
+                  <tr>
+                    <td>Cherjourey</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">EG530SD3F</td>
+                    <td>3-Speed Motor</td>
+                    <td style="color: var(--muted-foreground);">Platter rotation</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$8.88</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$8.88</td>
+                  </tr>
+                  <tr>
+                    <td>Same Sky</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">PJ-007</td>
+                    <td>DC Input Jack</td>
+                    <td style="color: var(--muted-foreground);">5V power input</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$0.57</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.57</td>
+                  </tr>
+                  <tr>
+                    <td>E-Switch</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">RA1113-1121</td>
+                    <td>Rocker Switch</td>
+                    <td style="color: var(--muted-foreground);">Power on/off</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$0.71</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.71</td>
+                  </tr>
+                  <tr>
+                    <td>Lite-On</td>
+                    <td class="font-mono" style="font-size: 0.75rem; color: var(--muted-foreground);">LTST-C194TBKT</td>
+                    <td>LED</td>
+                    <td style="color: var(--muted-foreground);">Bluetooth indicator</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$0.13</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.13</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="font-serif subsection-title">5.6 Non-Electrical Bill of Materials</h3>
+
+          <div class="card card-overflow">
+            <div class="overflow-x-auto">
+              <table style="font-size: 0.875rem;">
+                <thead>
+                  <tr style="background: rgba(0,0,0,0.03);">
+                    <th>Manufacturer</th>
+                    <th>Description</th>
+                    <th>Purpose</th>
+                    <th style="text-align: right;">Qty</th>
+                    <th style="text-align: right;">Price/Unit</th>
+                    <th style="text-align: right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Turntable Platter</td>
+                    <td style="color: var(--muted-foreground);">Spins record at specified RPM</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$1.00</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$1.00</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Timing Belt</td>
+                    <td style="color: var(--muted-foreground);">Connects motor to platter</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$0.30</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.30</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Tonearm Assembly</td>
+                    <td style="color: var(--muted-foreground);">Needle tracking and stability</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$4.00</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$4.00</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Speaker Frame</td>
+                    <td style="color: var(--muted-foreground);">Speaker protection and mounting</td>
+                    <td class="font-mono" style="text-align: right;">2</td>
+                    <td class="font-mono" style="text-align: right;">$2.00</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$4.00</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Suitcase Body (Plywood)</td>
+                    <td style="color: var(--muted-foreground);">Main enclosure</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$5.00</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$5.00</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Hinges</td>
+                    <td style="color: var(--muted-foreground);">Lid opening mechanism</td>
+                    <td class="font-mono" style="text-align: right;">2</td>
+                    <td class="font-mono" style="text-align: right;">$0.30</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.60</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Latches</td>
+                    <td style="color: var(--muted-foreground);">Lid locking mechanism</td>
+                    <td class="font-mono" style="text-align: right;">2</td>
+                    <td class="font-mono" style="text-align: right;">$0.30</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.60</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Feet</td>
+                    <td style="color: var(--muted-foreground);">Vibration dampening and stability</td>
+                    <td class="font-mono" style="text-align: right;">4</td>
+                    <td class="font-mono" style="text-align: right;">$0.05</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$0.20</td>
+                  </tr>
+                  <tr>
+                    <td>Crosley</td>
+                    <td>Grill</td>
+                    <td style="color: var(--muted-foreground);">Speaker protection with audio pass-through</td>
+                    <td class="font-mono" style="text-align: right;">1</td>
+                    <td class="font-mono" style="text-align: right;">$1.00</td>
+                    <td class="font-mono" style="text-align: right; font-weight: 600;">$1.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Section 6: Product Reassembly -->
+      <section id="reassembly" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">6</span>
+          <h2 class="font-serif section-title">Product Reassembly</h2>
+        </div>
+
+        <div class="card card-accent" style="margin-bottom: 2rem;">
+          <p class="leading-relaxed" style="font-size: 1.125rem; margin: 0;">
+            The turntable was successfully reassembled following reverse order of disassembly. All components were reconnected, and the unit was tested for functionality. The device powers on correctly, the motor spins at the appropriate speeds (33⅓, 45, and 78 RPM), and audio output functions properly through both built-in speakers and auxiliary outputs. Bluetooth connectivity was verified and operates as expected.
+          </p>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="image-item" onclick="openLightbox('img/image39.png')">
+            <div class="image-aspect">
+              <img src="img/image39.png" alt="Reassembled turntable - open view">
+            </div>
+          </div>
+          <div class="image-item" onclick="openLightbox('img/image40.png')">
+            <div class="image-aspect">
+              <img src="img/image40.png" alt="Reassembled turntable - closed view">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 7: Lessons Learned -->
+      <section id="lessons" class="section">
+        <div class="section-header">
+          <span class="font-mono section-number">7</span>
+          <h2 class="font-serif section-title">Lessons Learned</h2>
+        </div>
+
+        <div class="card card-accent-2">
+          <h3 class="font-serif" style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">Design for Cost</h3>
+          <div style="line-height: 1.75;">
+            <p style="margin-bottom: 1rem;">
+              This dissection clearly demonstrates <strong>design-for-cost</strong> principles in consumer electronics. The Crosley Voyager achieves its low retail price point through several strategic design decisions:
+            </p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+              <li style="display: flex; align-items: start; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span style="color: var(--chart-1); margin-top: 0.25rem;">•</span>
+                <span>Use of commodity components (generic ceramic cartridge, basic belt-drive motor)</span>
+              </li>
+              <li style="display: flex; align-items: start; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span style="color: var(--chart-1); margin-top: 0.25rem;">•</span>
+                <span>Minimal BOM with shared circuit boards across product variants</span>
+              </li>
+              <li style="display: flex; align-items: start; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span style="color: var(--chart-1); margin-top: 0.25rem;">•</span>
+                <span>Simple mechanical assembly (plywood cabinet, basic hinges and latches)</span>
+              </li>
+              <li style="display: flex; align-items: start; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span style="color: var(--chart-1); margin-top: 0.25rem;">•</span>
+                <span>Integration of multiple functions on single PCB (power, audio, Bluetooth)</span>
+              </li>
+            </ul>
+            <p style="margin: 0;">
+              As an engineering student focused on embedded systems, this project reinforced the importance of understanding the entire product ecosystem—from mechanical design to signal processing to manufacturing cost constraints. Real-world products must balance technical performance with economic viability, and the Crosley Voyager exemplifies that balance in the consumer audio market.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p style="margin-bottom: 0.5rem;">Crosley Voyager CR8017A-BK Dissection Report</p>
+        <p>Connor Bailey | Signal Processing & Embedded Systems</p>
+      </footer>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img id="lightbox-img" src="" alt="Enlarged view">
+  </div>
+
+  <script>
+    // Mobile menu
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileOverlay = document.getElementById('mobile-overlay');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    menuBtn.addEventListener('click', () => {
+      mobileOverlay.classList.toggle('hidden');
+      mobileNav.classList.toggle('hidden');
+    });
+
+    mobileOverlay.addEventListener('click', () => {
+      mobileOverlay.classList.add('hidden');
+      mobileNav.classList.add('hidden');
+    });
+
+    // Navigation
+    document.querySelectorAll('[data-scroll]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = document.getElementById(btn.getAttribute('data-scroll'));
+        if (target) {
+          const offset = window.innerWidth >= 1024 ? 0 : 70;
+          window.scrollTo({
+            top: target.offsetTop - offset,
+            behavior: 'smooth'
+          });
+          
+          mobileOverlay.classList.add('hidden');
+          mobileNav.classList.add('hidden');
+          
+          document.querySelectorAll('[data-scroll]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        }
+      });
+    });
+
+    // Update active section on scroll
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const sections = ['introduction', 'product-info', 'dissection', 'operation', 'analysis', 'reassembly', 'lessons'];
+          let current = '';
+          
+          sections.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) {
+              const rect = section.getBoundingClientRect();
+              if (rect.top <= 200 && rect.bottom >= 200) {
+                current = id;
+              }
+            }
+          });
+          
+          if (current) {
+            document.querySelectorAll('[data-scroll]').forEach(btn => {
+              btn.classList.remove('active');
+              if (btn.getAttribute('data-scroll') === current) {
+                btn.classList.add('active');
+              }
+            });
+          }
+          
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // Lightbox
+    function openLightbox(src) {
+      document.getElementById('lightbox').classList.remove('hidden');
+      document.getElementById('lightbox-img').src = src;
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.add('hidden');
+    }
+
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox') {
+        closeLightbox();
+      }
+    });
+  </script>
+</body>
+</html>
